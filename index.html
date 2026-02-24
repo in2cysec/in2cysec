@@ -6,7 +6,7 @@
 <title>In2 CySec</title>
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -34,6 +34,57 @@
     pointer-events: none;
   }
 
+  /* ── ANIMATIONS ── */
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes glitch {
+    0%   { text-shadow: 2px 0 #0ff, -2px 0 #f0f; }
+    25%  { text-shadow: -2px 0 #0ff, 2px 0 #f0f; }
+    50%  { text-shadow: 2px 2px #0ff, -2px -2px #f0f; }
+    75%  { text-shadow: -1px 1px #0ff, 1px -1px #f0f; }
+    100% { text-shadow: 2px 0 #0ff, -2px 0 #f0f; }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.10; }
+    50%      { opacity: 0.16; }
+  }
+
+  @keyframes scanline {
+    0%   { top: -10%; }
+    100% { top: 110%; }
+  }
+
+  .animate-on-scroll {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .animate-on-scroll.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Staggered card animation */
+  .card.visible:nth-child(1) { transition-delay: 0s; }
+  .card.visible:nth-child(2) { transition-delay: 0.12s; }
+  .card.visible:nth-child(3) { transition-delay: 0.24s; }
+  .card.visible:nth-child(4) { transition-delay: 0.36s; }
+
+  /* Grid pulse */
+  body::before {
+    animation: pulse 6s ease-in-out infinite;
+  }
+
   /* NAV */
   nav {
     padding: 20px 32px;
@@ -45,7 +96,8 @@
     backdrop-filter: blur(4px);
     position: sticky;
     top: 0;
-    z-index: 5;
+    z-index: 10;
+    animation: fadeIn 0.8s ease;
   }
 
   nav h1 {
@@ -64,8 +116,23 @@
     text-decoration: none;
     font-size: 0.85rem;
     font-weight: 600;
+    transition: color 0.2s ease;
+    position: relative;
   }
+
+  nav a::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: #fff;
+    transition: width 0.25s ease;
+  }
+
   nav a:hover { color: #fff; }
+  nav a:hover::after { width: 100%; }
 
   /* HERO */
   .hero {
@@ -75,19 +142,33 @@
     overflow: hidden;
   }
 
+  /* Scanline effect */
+  .hero::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(transparent, rgba(0,255,255,0.04), transparent);
+    animation: scanline 4s linear infinite;
+    pointer-events: none;
+  }
+
   .hero h2 {
     font-size: 3rem;
     font-weight: 800;
     margin-bottom: 16px;
     letter-spacing: 1.4px;
+    animation: fadeInUp 0.9s ease, glitch 3s ease-in-out infinite 1.5s;
   }
 
   .hero p {
-    opacity: 0.75;
+    opacity: 0;
     font-size: 1rem;
     max-width: 420px;
     margin: 0 auto;
     letter-spacing: 1px;
+    animation: fadeInUp 0.9s ease 0.3s forwards;
   }
 
   /* SECTION */
@@ -123,12 +204,13 @@
     padding: 24px 20px;
     border-radius: 8px;
     background: #080808;
-    transition: 0.18s ease;
+    transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.3s ease;
   }
 
   .card:hover {
     border-color: rgba(255,255,255,0.22);
     transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,255,255,0.04);
   }
 
   .card h3 {
@@ -143,14 +225,135 @@
     letter-spacing: 0.7px;
   }
 
-  /* FOOTER */
+  /* ── LINEAGE TREE ── */
+  #lineage {
+    max-width: 100%;
+    padding: 80px 20px 40px;
+  }
+
+  #lineage .title {
+    text-align: center;
+  }
+
+  .lineage-hint {
+    text-align: center;
+    font-size: 0.75rem;
+    opacity: 0.4;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+  }
+
+  .tree-viewport {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    height: 520px;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: grab;
+    position: relative;
+    background: #050505;
+  }
+
+  .tree-viewport:active { cursor: grabbing; }
+
+  .tree-canvas {
+    position: absolute;
+    width: 900px;
+    height: 600px;
+    /* will be repositioned via JS */
+  }
+
+  .tree-canvas svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .tree-canvas svg line {
+    stroke: rgba(255,255,255,0.15);
+    stroke-width: 1.5;
+    stroke-dasharray: 6 4;
+  }
+
+  .tree-node {
+    position: absolute;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: #0a0a0a;
+    border-radius: 8px;
+    padding: 16px 20px;
+    text-align: center;
+    min-width: 160px;
+    transition: border-color 0.2s ease, box-shadow 0.3s ease;
+    user-select: none;
+  }
+
+  .tree-node:hover {
+    border-color: rgba(255,255,255,0.28);
+    box-shadow: 0 0 20px rgba(0,255,255,0.06);
+  }
+
+  .tree-node h4 {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .tree-node .role {
+    font-size: 0.72rem;
+    opacity: 0.55;
+    letter-spacing: 0.8px;
+  }
+
+  .tree-node .year {
+    font-size: 0.68rem;
+    opacity: 0.4;
+    margin-top: 4px;
+    letter-spacing: 0.6px;
+  }
+
+  /* Year labels */
+  .tree-year-label {
+    position: absolute;
+    font-size: 0.7rem;
+    font-weight: 700;
+    opacity: 0.2;
+    letter-spacing: 2px;
+    user-select: none;
+  }
+
+  /* ── FOOTER ── */
   footer {
     padding: 45px;
     text-align: center;
-    opacity: 0.4;
     font-size: 0.8rem;
     border-top: 1px solid rgba(255,255,255,0.07);
     margin-top: 80px;
+  }
+
+  footer .footer-top {
+    opacity: 0.4;
+    margin-bottom: 14px;
+  }
+
+  footer .contact-link {
+    display: inline-block;
+    color: #ccc;
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    opacity: 0.55;
+    transition: opacity 0.2s ease, color 0.2s ease;
+  }
+
+  footer .contact-link:hover {
+    opacity: 1;
+    color: #fff;
   }
 </style>
 </head>
@@ -162,7 +365,7 @@
   <ul>
     <li><a href="#about">ABOUT</a></li>
     <li><a href="#programs">PROGRAMS</a></li>
-    <li><a href="#team">TEAM</a></li>
+    <li><a href="#lineage">LINEAGE</a></li>
   </ul>
 </nav>
 
@@ -171,29 +374,29 @@
   <p>SPONSORED BY FORTINET.</p>
 </div>
 
-<section id="about">
+<section id="about" class="animate-on-scroll">
   <div class="title">ABOUT</div>
   <p class="text">
     IN2 CYSEC FOCUSES ON PRACTICAL CYBERSECURITY: OFFENSE, DEFENSE, CAPTURE-THE-FLAG,
     FORENSICS, CRYPTOGRAPHY, AND ADVERSARIAL ANALYSIS. </p>
 </section>
 
-<section id="programs">
+<section id="programs" class="animate-on-scroll">
   <div class="title">PROGRAMS</div>
 
   <div class="grid">
 
-    <div class="card">
+    <div class="card animate-on-scroll">
       <h3>CTF TEAM</h3>
       <p>SCRIMS, EXPLOITS, CRYPTO, FORENSICS, NETWORKS — TRAINING FOR REAL COMPETITIONS.</p>
     </div>
 
-    <div class="card">
+    <div class="card animate-on-scroll">
       <h3>WORKSHOPS</h3>
       <p>REVERSE ENGINEERING, OSINT, WIRESHARK ANALYSIS, PRIV-ESC, AND FULL-STACK SECURITY.</p>
     </div>
 
-    <div class="card">
+    <div class="card animate-on-scroll">
       <h3>RESEARCH</h3>
       <p>PROJECTS ON SECURITY TOOLS, ADVERSARIAL TECHNIQUES, AND APPLIED THREAT MODELING.</p>
     </div>
@@ -201,16 +404,47 @@
   </div>
 </section>
 
-<section id="team">
-  <div class="title">Lineage</div>
+<section id="lineage" class="animate-on-scroll">
+  <div class="title">LINEAGE</div>
+  <p class="lineage-hint">CLICK &amp; DRAG TO PAN</p>
 
-  <div class="grid">
+  <div class="tree-viewport" id="treeViewport">
+    <div class="tree-canvas" id="treeCanvas">
 
-    <div class="card">
-      <h3>LAKSH PATEL</h3>
-      <p>PRESIDENT & FOUNDER</p>
-      <p>Class of 2026</p>
-    </div>
+      <!-- SVG connector lines drawn by JS -->
+      <svg id="treeSvg"></svg>
+
+      <!-- Year labels -->
+      <span class="tree-year-label" style="left:40px; top:80px;">2023 &mdash;</span>
+      <span class="tree-year-label" style="left:40px; top:260px;">2024 &mdash;</span>
+      <span class="tree-year-label" style="left:40px; top:440px;">2025 &mdash;</span>
+
+      <!-- Founders row -->
+      <div class="tree-node" id="n-laksh" style="left:250px; top:55px;">
+        <h4>LAKSH PATEL</h4>
+        <span class="role">PRESIDENT &amp; FOUNDER</span>
+        <div class="year">CLASS OF 2026</div>
+      </div>
+
+      <div class="tree-node" id="n-andrew" style="left:520px; top:55px;">
+        <h4>ANDREW BAE</h4>
+        <span class="role">PRESIDENT &amp; FOUNDER</span>
+        <div class="year">CLASS OF 2026</div>
+      </div>
+
+      <!-- Current leadership -->
+      <div class="tree-node" id="n-aidan" style="left:385px; top:235px;">
+        <h4>AIDAN CHANG</h4>
+        <span class="role">VICE PRESIDENT</span>
+        <div class="year">CLASS OF 2027</div>
+      </div>
+
+      <!-- Next gen -->
+      <div class="tree-node" id="n-pranshu" style="left:385px; top:415px;">
+        <h4>PRANSHU NAUTIYAL</h4>
+        <span class="role">PROJECT LEAD</span>
+        <div class="year">CLASS OF 2028</div>
+      </div>
 
     <div class="card">
       <h3>ANDREW BAE</h3>
@@ -235,9 +469,105 @@
   </div>
 </section>
 
-<footer>
-    EST. 2023
+<footer class="animate-on-scroll">
+  <div class="footer-top">EST. 2023</div>
+  <a class="contact-link" href="mailto:achang1@imsa.edu">ACHANG1@IMSA.EDU</a>
 </footer>
+
+<script>
+(function() {
+  // ── Scroll-triggered animations ──
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15 });
+
+  document.querySelectorAll('.animate-on-scroll').forEach(function(el) {
+    obs.observe(el);
+  });
+
+  // ── Draw SVG connector lines ──
+  function center(el) {
+    return {
+      x: el.offsetLeft + el.offsetWidth / 2,
+      y: el.offsetTop + el.offsetHeight / 2
+    };
+  }
+
+  var svg = document.getElementById('treeSvg');
+
+  var connections = [
+    ['n-laksh',  'n-aidan'],
+    ['n-andrew', 'n-aidan'],
+    ['n-aidan',  'n-pranshu']
+  ];
+
+  connections.forEach(function(c) {
+    var a = center(document.getElementById(c[0]));
+    var b = center(document.getElementById(c[1]));
+    var line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', a.x);
+    line.setAttribute('y1', a.y);
+    line.setAttribute('x2', b.x);
+    line.setAttribute('y2', b.y);
+    svg.appendChild(line);
+  });
+
+  // ── Draggable tree viewport ──
+  var viewport = document.getElementById('treeViewport');
+  var canvas   = document.getElementById('treeCanvas');
+  var dragging  = false;
+  var startX, startY, scrollX, scrollY;
+
+  // Center the canvas initially
+  var ox = (canvas.offsetWidth  - viewport.offsetWidth)  / 2;
+  var oy = 0;
+  canvas.style.left = -ox + 'px';
+  canvas.style.top  = -oy + 'px';
+
+  viewport.addEventListener('mousedown', function(e) {
+    dragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    scrollX = parseInt(canvas.style.left) || 0;
+    scrollY = parseInt(canvas.style.top)  || 0;
+    e.preventDefault();
+  });
+
+  window.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    var dx = e.clientX - startX;
+    var dy = e.clientY - startY;
+    canvas.style.left = (scrollX + dx) + 'px';
+    canvas.style.top  = (scrollY + dy) + 'px';
+  });
+
+  window.addEventListener('mouseup', function() { dragging = false; });
+
+  // Touch support
+  viewport.addEventListener('touchstart', function(e) {
+    if (e.touches.length !== 1) return;
+    dragging = true;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    scrollX = parseInt(canvas.style.left) || 0;
+    scrollY = parseInt(canvas.style.top)  || 0;
+  }, { passive: true });
+
+  window.addEventListener('touchmove', function(e) {
+    if (!dragging || e.touches.length !== 1) return;
+    var dx = e.touches[0].clientX - startX;
+    var dy = e.touches[0].clientY - startY;
+    canvas.style.left = (scrollX + dx) + 'px';
+    canvas.style.top  = (scrollY + dy) + 'px';
+  }, { passive: true });
+
+  window.addEventListener('touchend', function() { dragging = false; });
+})();
+</script>
 
 </body>
 </html>
